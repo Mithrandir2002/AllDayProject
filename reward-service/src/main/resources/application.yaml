@@ -1,0 +1,41 @@
+server:
+  port: 8083 # Cổng chạy (Wallet 8081, Auth 8082, Reward 8083)
+
+spring:
+  application:
+    name: reward-service
+
+  # VŨ KHÍ TỐI THƯỢNG CỦA JAVA 21: BẬT VIRTUAL THREADS
+  threads:
+    virtual:
+      enabled: true
+
+  # Cấu hình Database
+  datasource:
+    url: jdbc:sqlserver://localhost:1433;databaseName=reward_db;encrypt=true;trustServerCertificate=true;
+    username: sa
+    password: <thay_bang_pass_sql_cua_ban>
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate # Giao toàn quyền sinh bảng cho Flyway
+    show-sql: true
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+
+  # Cấu hình Kafka Consumer
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: reward-processing-group
+      # Nếu service chết, lúc sống lại sẽ đọc tiếp từ message bị lỡ
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      # Dùng ErrorHandlingDeserializer để không bị chết kẹt (poison pill) nếu gửi sai định dạng JSON
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      properties:
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+        spring.json.trusted.packages: "*" # Cho phép deserialize mọi Object
