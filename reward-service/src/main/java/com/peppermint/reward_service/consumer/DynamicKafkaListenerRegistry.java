@@ -1,16 +1,22 @@
 package com.peppermint.reward_service.consumer;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
+import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.listener.MessageListener;
 import org.springframework.stereotype.Component;
 
 @Component
 public class DynamicKafkaListenerRegistry {
 
-    @Autowired
-    private ConcurrentKafkaListenerContainerFactory<String, String> containerFactory;
+    private final ConcurrentKafkaListenerContainerFactory<String, String> containerFactory;
+
+    public DynamicKafkaListenerRegistry(
+            ConcurrentKafkaListenerContainerFactory<String, String> containerFactory,
+            DefaultErrorHandler kafkaErrorHandler) {
+        this.containerFactory = containerFactory;
+        this.containerFactory.setCommonErrorHandler(kafkaErrorHandler);
+    }
 
     /**
      * Khởi tạo và chạy trực tiếp một Consumer Container
