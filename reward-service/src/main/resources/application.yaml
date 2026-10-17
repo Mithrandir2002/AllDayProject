@@ -10,7 +10,7 @@ spring:
     virtual:
       enabled: true
 
-  # Cấu hình Database
+  # Cấu hình SQL Server (Core)
   datasource:
     url: jdbc:sqlserver://localhost:1433;databaseName=reward_db;encrypt=true;trustServerCertificate=true;
     username: sa
@@ -19,26 +19,29 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate # Giao toàn quyền sinh bảng cho Flyway
+      ddl-auto: validate
     show-sql: true
 
   flyway:
     enabled: true
     baseline-on-migrate: true
 
+  # BỔ SUNG: Cấu hình MongoDB (Log & Analytics)
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/reward_db
+
   # Cấu hình Kafka Consumer
   kafka:
     bootstrap-servers: localhost:9092
     consumer:
       group-id: reward-processing-group
-      # Nếu service chết, lúc sống lại sẽ đọc tiếp từ message bị lỡ
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      # Dùng ErrorHandlingDeserializer để không bị chết kẹt (poison pill) nếu gửi sai định dạng JSON
       value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
       properties:
         spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
-        spring.json.trusted.packages: "*" # Cho phép deserialize mọi Object
+        spring.json.trusted.packages: "*"
 
 app:
   kafka:
